@@ -12,19 +12,23 @@
 
     <script>
         document.getElementById('sendRequest').addEventListener('click', function() {
+            // Obtenir l'heure UTC courante plus 2 secondes
             let currentTime = new Date(Date.now() + 2000).toISOString();
+
+            // XML à envoyer
             let xmlData = `<SignalProcessingNotification xmlns="urn:cablelabs:iptvservices:esam:xsd:signal:1"
-                                  xmlns:ns6="urn:cablelabs:iptvservices:esam:xsd:manifest:1"
-                                  xmlns:ns5="urn:cablelabs:iptvservices:esam:xsd:common:1"
-                                  xmlns:ns2="urn:cablelabs:md:xsd:core:3.0"
-                                  xmlns:ns4="urn:cablelabs:md:xsd:content:3.0"
-                                  xmlns:ns3="urn:cablelabs:md:xsd:signaling:3.0">
+                              xmlns:ns6="urn:cablelabs:iptvservices:esam:xsd:manifest:1"
+                              xmlns:ns5="urn:cablelabs:iptvservices:esam:xsd:common:1"
+                              xmlns:ns2="urn:cablelabs:md:xsd:core:3.0"
+                              xmlns:ns4="urn:cablelabs:md:xsd:content:3.0"
+                              xmlns:ns3="urn:cablelabs:md:xsd:signaling:3.0">
                 <ResponseSignal action="create" acquisitionPointIdentity="ESAM_OOB" acquisitionSignalID="11b98ada7cc04152bc5c1d2ab2909210">
                     <ns3:UTCPoint utcPoint="${currentTime}"/>
                     <ns3:BinaryData signalType="SCTE35">/DAtAAAAAAAAAP/wBQb+y0YvtQAXAhVDVUVJWiMAp3/fAAAUmXABATE4AAD0IncX</ns3:BinaryData>
                 </ResponseSignal>
             </SignalProcessingNotification>`;
 
+            // Options de la requête fetch
             let requestOptions = {
                 method: 'POST',
                 headers: {
@@ -35,12 +39,16 @@
                 body: xmlData
             };
 
-            fetch('http://localhost:3000/proxy/esam-pois-oob', requestOptions)
+            // Envoyer la requête
+            fetch('http://esam-oob-video-solutions-team-01.vos360.video/esam-pois-oob', requestOptions)
                 .then(response => {
                     if (!response.ok) {
                         throw new Error('Network response was not ok ' + response.statusText);
                     }
+                    // Afficher le code de retour HTTP
                     document.getElementById('statusCode').innerText = response.status;
+
+                    // Afficher le corps de la réponse
                     return response.text().then(text => {
                         document.getElementById('responseText').innerText = text;
                     });
