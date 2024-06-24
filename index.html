@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Send SCTE35</title>
+</head>
+<body>
+    <button id="sendRequest">Envoyer la requête SCTE35</button>
+    <p id="response">Code de retour HTTP: <span id="statusCode"></span></p>
+    <pre id="responseText"></pre>
+
+    <script>
+        document.getElementById('sendRequest').addEventListener('click', function() {
+            let currentTime = new Date(Date.now() + 2000).toISOString();
+            let xmlData = `<SignalProcessingNotification xmlns="urn:cablelabs:iptvservices:esam:xsd:signal:1"
+                                  xmlns:ns6="urn:cablelabs:iptvservices:esam:xsd:manifest:1"
+                                  xmlns:ns5="urn:cablelabs:iptvservices:esam:xsd:common:1"
+                                  xmlns:ns2="urn:cablelabs:md:xsd:core:3.0"
+                                  xmlns:ns4="urn:cablelabs:md:xsd:content:3.0"
+                                  xmlns:ns3="urn:cablelabs:md:xsd:signaling:3.0">
+                <ResponseSignal action="create" acquisitionPointIdentity="ESAM_OOB" acquisitionSignalID="11b98ada7cc04152bc5c1d2ab2909210">
+                    <ns3:UTCPoint utcPoint="${currentTime}"/>
+                    <ns3:BinaryData signalType="SCTE35">/DAtAAAAAAAAAP/wBQb+y0YvtQAXAhVDVUVJWiMAp3/fAAAUmXABATE4AAD0IncX</ns3:BinaryData>
+                </ResponseSignal>
+            </SignalProcessingNotification>`;
+
+            let requestOptions = {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/xml',
+                    'Content-Type': 'application/xml',
+                    'Authorization': 'Basic dmlkZW8tc29sdXRpb25zLWdyMzp2aWRlby1zb2x1dGlvbnMtZ3IzIUAj'
+                },
+                body: xmlData
+            };
+
+            fetch('http://localhost:3000/proxy/esam-pois-oob', requestOptions)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok ' + response.statusText);
+                    }
+                    document.getElementById('statusCode').innerText = response.status;
+                    return response.text().then(text => {
+                        document.getElementById('responseText').innerText = text;
+                    });
+                })
+                .catch(error => {
+                    console.error('Erreur:', error);
+                    document.getElementById('statusCode').innerText = 'Erreur';
+                    document.getElementById('responseText').innerText = error.toString();
+                });
+        });
+    </script>
+</body>
+</html>
